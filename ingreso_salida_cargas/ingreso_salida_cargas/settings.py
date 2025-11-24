@@ -11,9 +11,14 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Cargar el archivo .env desde la raíz del proyecto
+load_dotenv(BASE_DIR / '.env')
 
 
 # Quick-start development settings - unsuitable for production
@@ -37,6 +42,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "rest_framework",
+    "app_ingreso_salidas"
 ]
 
 MIDDLEWARE = [
@@ -73,11 +80,36 @@ WSGI_APPLICATION = "ingreso_salida_cargas.wsgi.application"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': os.getenv('MY_SQL_DB'),
+        'USER': os.getenv('MY_SQL_USER'),
+        'PASSWORD': os.getenv('MY_SQL_PASSWORD'),
+        'HOST': os.getenv('MY_SQL_HOST', 'localhost'),
+        'PORT': os.getenv('MY_SQL_PORT', '3306'),
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            'charset': 'utf8mb4',
+        },
     }
 }
+
+# Workaround para MariaDB 10.4.32 (temporal hasta actualizar XAMPP)
+import django.db.backends.mysql.base as mysql_base
+import django.db.backends.mysql.features as mysql_features
+
+# Desactivar verificación de versión y RETURNING clause
+original_init = mysql_base.DatabaseWrapper.init_connection_state
+
+def patched_init(self):
+    original_check = mysql_base.DatabaseWrapper.check_database_version_supported
+    mysql_base.DatabaseWrapper.check_database_version_supported = lambda self: None
+    original_init(self)
+    mysql_base.DatabaseWrapper.check_database_version_supported = original_check
+    # Desactivar can_return_columns_from_insert para MariaDB 10.4
+    self.features.can_return_columns_from_insert = False
+
+mysql_base.DatabaseWrapper.init_connection_state = patched_init
 
 
 # Password validation
