@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ form.instance.pk|yesno:"Editar,Nuevo" }} Vehículo - ForestLog{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h2><i class="bi bi-truck"></i> {{ form.instance.pk|yesno:"Editar,Nuevo" }} Vehículo</h2>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'vehicle_list' %}">Vehículos</a></li>
+            <li class="breadcrumb-item active">{{ form.instance.pk|yesno:"Editar,Nuevo" }}</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Patente *</label>
+                            <input type="text" name="plate" class="form-control {% if form.plate.errors %}is-invalid{% endif %}" 
+                                   value="{{ form.plate.value|default:'' }}" required placeholder="ABCD12">
+                            {% if form.plate.errors %}
+                                <div class="invalid-feedback">{{ form.plate.errors.0 }}</div>
+                            {% endif %}
+                            <small class="form-text text-muted">Formato chileno: 4 letras + 2 números</small>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Tipo *</label>
+                            <select name="type" class="form-select {% if form.type.errors %}is-invalid{% endif %}" required>
+                                <option value="">Seleccione...</option>
+                                <option value="truck" {% if form.type.value == 'truck' %}selected{% endif %}>Camión</option>
+                                <option value="pickup" {% if form.type.value == 'pickup' %}selected{% endif %}>Camioneta</option>
+                                <option value="machinery" {% if form.type.value == 'machinery' %}selected{% endif %}>Maquinaria</option>
+                            </select>
+                            {% if form.type.errors %}
+                                <div class="invalid-feedback">{{ form.type.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Propietario *</label>
+                        <input type="text" name="owner" class="form-control {% if form.owner.errors %}is-invalid{% endif %}" 
+                               value="{{ form.owner.value|default:'' }}" required placeholder="Nombre del propietario o empresa">
+                        {% if form.owner.errors %}
+                            <div class="invalid-feedback">{{ form.owner.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Capacidad (kg) *</label>
+                            <input type="number" name="capacity_kg" class="form-control {% if form.capacity_kg.errors %}is-invalid{% endif %}" 
+                                   value="{{ form.capacity_kg.value|default:'' }}" required placeholder="15000">
+                            {% if form.capacity_kg.errors %}
+                                <div class="invalid-feedback">{{ form.capacity_kg.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Revisión Técnica *</label>
+                            <input type="date" name="tech_review_due" class="form-control {% if form.tech_review_due.errors %}is-invalid{% endif %}" 
+                                   value="{{ form.tech_review_due.value|date:'Y-m-d'|default:'' }}" required>
+                            {% if form.tech_review_due.errors %}
+                                <div class="invalid-feedback">{{ form.tech_review_due.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Estado *</label>
+                        <select name="status" class="form-select {% if form.status.errors %}is-invalid{% endif %}" required>
+                            <option value="active" {% if form.status.value == 'active' %}selected{% endif %}>Activo</option>
+                            <option value="inactive" {% if form.status.value == 'inactive' %}selected{% endif %}>Inactivo</option>
+                        </select>
+                        {% if form.status.errors %}
+                            <div class="invalid-feedback">{{ form.status.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-forest">
+                            <i class="bi bi-save"></i> Guardar
+                        </button>
+                        <a href="{% url 'vehicle_list' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i> Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

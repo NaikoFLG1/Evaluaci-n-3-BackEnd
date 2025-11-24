@@ -1,16 +1,27 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, filters, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
 from django.utils import timezone
 from .models import Vehicle, AccessRecord
 from .serializers import VehicleSerializer, AccessRecordSerializer, AccessRecordCreateSerializer
 
 
+class IsAdminOrReadCreate(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return request.user and request.user.is_authenticated
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in ['GET', 'POST']:
+            return True
+        return request.user.is_staff
+
+
 class VehicleViewSet(viewsets.ModelViewSet):
-    queryset = Vehicle.objects.all()
+    queryset = Vehicle.objects.all().order_by('-created_at')
     serializer_class = VehicleSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminOrReadCreate]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['plate', 'status']
     
     def get_queryset(self):
         queryset = Vehicle.objects.all()
@@ -41,8 +52,10 @@ class VehicleViewSet(viewsets.ModelViewSet):
 
 
 class AccessRecordViewSet(viewsets.ModelViewSet):
-    queryset = AccessRecord.objects.select_related('vehicle', 'created_by').all()
-    permission_classes = [IsAuthenticated]
+    queryset = AccessRecord.objects.select_related('vehicle', 'created_by').all().order_by('-gate_in_at')
+    permission_classes = [IsAdminOrReadCreate]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['vehicle__plate', 'state', 'destination', 'origin']
     
     def get_serializer_class(self):
         if self.action == 'create':

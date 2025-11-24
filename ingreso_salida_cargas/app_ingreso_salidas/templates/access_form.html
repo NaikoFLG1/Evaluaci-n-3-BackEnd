@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block title %}Nuevo Registro de Acceso - ForestLog{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h2><i class="bi bi-clipboard-check"></i> Nuevo Registro de Acceso</h2>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'access_list' %}">Registros</a></li>
+            <li class="breadcrumb-item active">Nuevo</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Vehículo *</label>
+                        <select name="vehicle" class="form-select {% if form.vehicle.errors %}is-invalid{% endif %}" required>
+                            <option value="">Seleccione un vehículo...</option>
+                            {% for vehicle in vehicles %}
+                                <option value="{{ vehicle.pk }}" {% if form.vehicle.value == vehicle.pk %}selected{% endif %}>
+                                    {{ vehicle.plate }} - {{ vehicle.get_type_display }} ({{ vehicle.owner }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                        {% if form.vehicle.errors %}
+                            <div class="invalid-feedback">{{ form.vehicle.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Nombre del Chofer *</label>
+                            <input type="text" name="driver_name" class="form-control {% if form.driver_name.errors %}is-invalid{% endif %}" 
+                                   value="{{ form.driver_name.value|default:'' }}" required placeholder="Juan Pérez">
+                            {% if form.driver_name.errors %}
+                                <div class="invalid-feedback">{{ form.driver_name.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">RUT del Chofer *</label>
+                            <input type="text" name="driver_rut" class="form-control {% if form.driver_rut.errors %}is-invalid{% endif %}" 
+                                   value="{{ form.driver_rut.value|default:'' }}" required placeholder="12345678-9">
+                            {% if form.driver_rut.errors %}
+                                <div class="invalid-feedback">{{ form.driver_rut.errors.0 }}</div>
+                            {% endif %}
+                            <small class="form-text text-muted">Formato: 12345678-9</small>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Tipo de Carga *</label>
+                        <select name="load_type" class="form-select {% if form.load_type.errors %}is-invalid{% endif %}" required>
+                            <option value="">Seleccione...</option>
+                            <option value="logs" {% if form.load_type.value == 'logs' %}selected{% endif %}>Trozos</option>
+                            <option value="chips" {% if form.load_type.value == 'chips' %}selected{% endif %}>Chips</option>
+                            <option value="lumber" {% if form.load_type.value == 'lumber' %}selected{% endif %}>Madera Aserrada</option>
+                            <option value="other" {% if form.load_type.value == 'other' %}selected{% endif %}>Otros</option>
+                        </select>
+                        {% if form.load_type.errors %}
+                            <div class="invalid-feedback">{{ form.load_type.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Origen *</label>
+                            <input type="text" name="origin" class="form-control {% if form.origin.errors %}is-invalid{% endif %}" 
+                                   value="{{ form.origin.value|default:'' }}" required placeholder="Faena Los Pinos">
+                            {% if form.origin.errors %}
+                                <div class="invalid-feedback">{{ form.origin.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Destino *</label>
+                            <input type="text" name="destination" class="form-control {% if form.destination.errors %}is-invalid{% endif %}" 
+                                   value="{{ form.destination.value|default:'' }}" required placeholder="Planta Concepción">
+                            {% if form.destination.errors %}
+                                <div class="invalid-feedback">{{ form.destination.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-forest">
+                            <i class="bi bi-save"></i> Registrar Ingreso
+                        </button>
+                        <a href="{% url 'access_list' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i> Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card bg-light">
+            <div class="card-body">
+                <h5><i class="bi bi-info-circle"></i> Información</h5>
+                <hr>
+                <p class="small mb-2"><strong>Este formulario registra:</strong></p>
+                <ul class="small">
+                    <li>Ingreso de un vehículo a planta</li>
+                    <li>Datos del chofer y carga</li>
+                    <li>Hora de entrada automática</li>
+                </ul>
+                <p class="small mb-0"><strong>Nota:</strong> La salida se registra posteriormente desde la lista de registros.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
